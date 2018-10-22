@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-card>
-      <el-form :model="form" ref="form" label-width="50px" size="small">
+      <el-form :model="form" ref="form" label-width="80px" size="small" :rules="rules">
         <el-row>
           <el-col :span="12">
             <el-form-item prop="name" label="名称">
@@ -17,12 +17,12 @@
         <el-row>
           <el-col :span="12">
             <el-form-item prop="price" label="单价">
-              <el-input v-model="form.price"></el-input>
+              <el-input v-model.number="form.price"></el-input>
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item prop="cost" label="成本">
-              <el-input v-model="form.cost"></el-input>
+              <el-input v-model.number="form.cost"></el-input>
             </el-form-item>
           </el-col>
         </el-row>
@@ -78,6 +78,18 @@
           cost: '',
           isOnShelf: true,
         },
+        rules: {
+          name: [
+            { required: true, message: '请输入商品名称', trigger: 'blur' },
+          ],
+          price: [
+            { required: true, message: '请输入价格', trigger: 'blur' },
+            { type: 'number', message: '请输入数字', trigger: 'blur' },
+          ],
+          cost: [
+            { type: 'number', message: '请输入数字', trigger: 'blur' },
+          ],
+        },
       };
     },
     computed: {
@@ -94,31 +106,35 @@
         this.form.isOnShelf = true;
       },
       handleSaveClick() {
-        const data = {
-          id: this.form.id,
-          name: this.form.name,
-          shortName: this.form.shortName,
-          price: parseFloat(this.form.price),
-          cost: parseFloat(this.form.cost),
-          isOnShelf: this.form.isOnShelf,
-        };
-        if (this.form.id) {
-          this.updateProduct(data).then(() => {
-            this.$notify({
-              type: 'success',
-              title: '更新成功',
+        this.$refs.form.validate((valid) => {
+          if (!valid) return;
+
+          const data = {
+            id: this.form.id,
+            name: this.form.name,
+            shortName: this.form.shortName,
+            price: parseFloat(this.form.price),
+            cost: parseFloat(this.form.cost) || 0,
+            isOnShelf: this.form.isOnShelf,
+          };
+          if (this.form.id) {
+            this.updateProduct(data).then(() => {
+              this.$notify({
+                type: 'success',
+                title: '更新成功',
+              });
+              this.resetForm();
             });
-            this.resetForm();
-          });
-        } else {
-          this.addProduct(data).then(() => {
-            this.$notify({
-              type: 'success',
-              title: '添加成功',
+          } else {
+            this.addProduct(data).then(() => {
+              this.$notify({
+                type: 'success',
+                title: '添加成功',
+              });
+              this.resetForm();
             });
-            this.resetForm();
-          });
-        }
+          }
+        });
       },
       handleCancelClick() {
         this.resetForm();
@@ -126,18 +142,20 @@
       handleEditClick(row) {
         this.form.id = row._id;
         this.form.name = row.name;
-        this.form.price = `${row.price}`;
+        this.form.price = row.price;
         this.form.shortName = row.shortName;
         this.form.isOnShelf = row.isOnShelf;
         this.form.cost = row.cost;
       },
       handleRemoveClick(row) {
-        this.removeProduct(row._id).then(() => { // eslint-disable-line
-          this.$notify({
-            type: 'success',
-            title: '删除成功',
+        this.$confirm('确认删除此商品？').then(() => {
+          this.removeProduct(row._id).then(() => { // eslint-disable-line
+            this.$notify({
+              type: 'success',
+              title: '删除成功',
+            });
           });
-        });
+        }).catch(() => {});
       },
       handleTableSwitchChange({ _id, isOnShelf }) { // eslint-disable-line
         this.updateProductOnShelf({ id: _id, onShelf: !isOnShelf }).catch((err) => {

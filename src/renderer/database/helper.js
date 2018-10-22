@@ -52,7 +52,7 @@ function addProduct({
 
 function getAllProducts() {
   return new Promise((resolve, reject) => {
-    productDb.find({}, (err, docs) => {
+    productDb.find({}).sort({ created_at: 1 }).exec((err, docs) => {
       if (!err) {
         resolve(docs);
       } else {

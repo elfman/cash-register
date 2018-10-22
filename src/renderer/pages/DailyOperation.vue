@@ -55,7 +55,6 @@
     },
     mounted() {
       this.$bus.$on('edit-order', (id) => {
-        console.log('here', id);
         this.activeTab = 'ordering';
         this.editOrderId = id;
       });
