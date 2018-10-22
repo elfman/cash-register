@@ -33,6 +33,7 @@ const actions = {
   },
   createOrder(store, goods) {
     return new Promise((resolve, reject) => {
+      console.log(goods);
       helper.createOrder(goods).then((result) => {
         resolve(result);
       }).catch((err) => {
@@ -80,7 +81,7 @@ const actions = {
       });
     });
   },
-  getCompletedOrders({ commit }, startTime = localStorage.getItem('fromTime')) {
+  getCompletedOrders({ commit }, startTime = new Date(localStorage.getItem('runTime'))) {
     return new Promise((resolve, reject) => {
       helper.getCompletedOrders(startTime).then((result) => {
         commit(types.UPDATE_COMPLETED_ORDERS, result);

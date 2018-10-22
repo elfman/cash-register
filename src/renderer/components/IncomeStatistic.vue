@@ -82,7 +82,7 @@
           canceled: '已取消',
         },
         chartSettings: {
-          metrics: ['营业额', '利润', '商品数', '完成订单'],
+          metrics: ['营业额', '利润'],
         },
         chartExtend: {
           series: {
@@ -121,7 +121,7 @@
           rows.push(data);
         }
         return {
-          columns: ['日期', '营业额', '商品数', '完成订单'],
+          columns: ['日期', '营业额', '利润'],
           rows,
         };
       },

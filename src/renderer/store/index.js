@@ -6,22 +6,28 @@ import types from './mutation-types';
 
 Vue.use(Vuex);
 
-const fromTime = localStorage.getItem('fromTime');
+let runTime;
+if (localStorage.getItem('runTime')) {
+  runTime = new Date(localStorage.getItem('runTime'));
+} else {
+  runTime = new Date();
+  localStorage.setItem('runTime', runTime);
+}
 
 const state = {
-  fromTime: fromTime || Date.now(),
+  runTime,
 };
 
 const mutations = {
-  [types.UPDATE_FROM_TIME](state, payload) {
-    state.fromTime = payload;
+  [types.UPDATE_RUN_TIME](state, payload) {
+    state.runTime = payload;
   },
 };
 
 const actions = {
-  updateFromTime({ commit }, payload) {
-    localStorage.setItem('fromTime', payload);
-    commit(types.UPDATE_FROM_TIME, payload);
+  updateRunTime({ commit }, payload = new Date()) {
+    localStorage.setItem('runTime', payload);
+    commit(types.UPDATE_RUN_TIME, payload);
   },
 };
 

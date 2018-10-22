@@ -4,7 +4,7 @@
     <el-row>
       <el-col :span="12">
         <el-button type="info" @click="continueOperation">继续上次经营</el-button>
-        <el-button type="primary" @click="openNewDay">开启新篇章</el-button>
+        <el-button type="primary" @click="openNewDay">开启新的一天</el-button>
       </el-col>
     </el-row>
   </div>
@@ -15,25 +15,25 @@
   export default {
     name: 'Welcome',
     methods: {
-      ...mapActions(['updateFromTime']),
+      ...mapActions(['updateRunTime']),
       continueOperation() {
         this.$router.push({
           name: 'DailyOperation',
         });
       },
       openNewDay() {
-        this.updateFromTime(Date.now());
+        this.updateRunTime();
         this.$router.push({
           name: 'DailyOperation',
         });
       },
     },
     mounted() {
-      // if (!localStorage.getItem('fromTime')) {
-      //   this.$router.push({
-      //     name: 'DailyOperation',
-      //   });
-      // }
+      if (!localStorage.getItem('runTime')) {
+        this.$router.push({
+          name: 'DailyOperation',
+        });
+      }
     },
   };
 </script>

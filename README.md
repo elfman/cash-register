@@ -1,6 +1,6 @@
 # store-manager
 
-> An electron-vue project
+> 使用Electron + Vue + Element UI + NeDB搭建的小商店记账软件
 
 #### Build Setup
 
@@ -14,12 +14,6 @@ npm run dev
 # build electron application for production
 npm run build
 
-# run unit tests
-npm test
-
-
-# lint all JS/Vue component files in `src/`
-npm run lint
 
 ```
 

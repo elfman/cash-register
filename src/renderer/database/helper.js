@@ -10,7 +10,6 @@ let homedir = remote.app.getPath('userData');
 if (process.env.NODE_ENV !== 'production') {
   homedir = path.resolve(homedir, '../store-manager');
 }
-console.log(remote.app.getName());
 
 function initDb() {
   if (!productDb) {
@@ -128,7 +127,7 @@ function createOrder(goods) {
   let total = 0;
   let quantity = 0;
   let profit = 0;
-  goods.forEach((t) => {
+  detail.forEach((t) => {
     total += t.price * t.quantity;
     quantity += t.quantity;
     profit += t.profit;
@@ -150,6 +149,7 @@ function createOrder(goods) {
     }, (err, doc) => {
       if (!err) {
         resolve(doc);
+        console.log(doc);
       } else {
         reject(err);
       }
@@ -221,11 +221,15 @@ function getPendingOrders() {
   });
 }
 
-function getCompletedOrders() {
+function getCompletedOrders(fromTime) {
+  console.log(fromTime);
   return new Promise((resolve, reject) => {
     orderDb.find({
-      $not: {
-        status: 'pending',
+      status: {
+        $ne: 'pending',
+      },
+      updated_at: {
+        $gte: fromTime,
       },
     }).sort({ updated_at: -1 }).exec((err, docs) => {
       if (!err) {
