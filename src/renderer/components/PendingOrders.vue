@@ -56,12 +56,7 @@
         });
       },
       handleEditClick(row) {
-        this.$router.replace({
-          name: 'Ordering',
-          params: {
-            edit: row,
-          },
-        });
+        this.$bus.$emit('edit-order', row._id);
       },
       refresh() {
         this.getPendingOrders().catch((err) => {

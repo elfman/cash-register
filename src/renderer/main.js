@@ -15,6 +15,18 @@ Vue.config.productionTip = false;
 Vue.use(ElementUI);
 helper.initDb();
 
+const EventBus = new Vue();
+
+Object.defineProperties(Vue.prototype, {
+  $bus: {
+    get() {
+      return EventBus;
+    },
+  },
+});
+
+global.EventBus = EventBus;
+
 /* eslint-disable no-new */
 new Vue({
   components: { App },

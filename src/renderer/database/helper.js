@@ -114,8 +114,7 @@ function updateProductOnShelf(id, isOnShelf) {
   });
 }
 
-function createOrder(goods) {
-  const date = new Date();
+function calculateOrderDetail(goods) {
   const detail = goods.map(t => ({
     _id: t._id,
     name: t.name,
@@ -135,21 +134,40 @@ function createOrder(goods) {
 
   const day = moment().format('YYYY-MM-DD');
 
+  return {
+    total,
+    status: 'pending',
+    day,
+    list: detail,
+    quantity,
+    profit,
+  };
+}
+
+function createOrder(goods) {
+  const order = calculateOrderDetail(goods);
+  order.created_at = new Date();
+  order.updated_at = new Date();
+
   return new Promise((resolve, reject) => {
-    orderDb.insert({
-      total,
-      status: 'pending',
-      created_at: date,
-      updated_at: date,
-      day,
-      month: `${date.getFullYear()}-${date.getMonth()}`,
-      list: detail,
-      quantity,
-      profit,
-    }, (err, doc) => {
+    orderDb.insert(order, (err, doc) => {
       if (!err) {
         resolve(doc);
-        console.log(doc);
+      } else {
+        reject(err);
+      }
+    });
+  });
+}
+
+function updateOrder(id, goods) {
+  const order = calculateOrderDetail(goods);
+  order.updated_at = new Date();
+
+  return new Promise((resolve, reject) => {
+    orderDb.update({ _id: id }, order, {}, (err, docs) => {
+      if (!err) {
+        resolve(docs);
       } else {
         reject(err);
       }
@@ -222,7 +240,6 @@ function getPendingOrders() {
 }
 
 function getCompletedOrders(fromTime) {
-  console.log(fromTime);
   return new Promise((resolve, reject) => {
     orderDb.find({
       status: {
@@ -303,6 +320,7 @@ export default {
   updateProductOnShelf,
   getAllOrders,
   createOrder,
+  updateOrder,
   removeOrder,
   getOrdersWithStatus,
   getOrderDetail,

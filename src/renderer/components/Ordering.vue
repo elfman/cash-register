@@ -20,16 +20,24 @@
           <span>已点商品：</span>
           <el-button type="text" @click="clearCart">清空</el-button>
         </div>
-        <el-table :data="cartFiltered" :show-header="false" size="small"
+        <el-table :data="cartFiltered" size="small"
                   show-summary :summary-method="getSummaries">
           <el-table-column prop="name" label="名称"></el-table-column>
-          <el-table-column prop="quantity" label="数量" width="30"></el-table-column>
-          <el-table-column label="价格" width="80">
+          <el-table-column prop="quantity" label="数量" width="100"></el-table-column>
+          <el-table-column label="价格" width="100">
             <template slot-scope="{row}">
               {{(row.price * row.quantity).toFixed(2)}}
             </template>
           </el-table-column>
         </el-table>
+      </el-card>
+      <el-card class="editing-order" v-if="orderEditing">
+        <div class="row title">修改订单</div>
+        <div class="row">需补差价：<span>{{(summery.sum - orderEditing.total).toFixed(2)}}</span></div>
+        <div class="row">
+          <el-button size="mini" @click="handleCancelEditClick">取消修改</el-button>
+          <el-button size="mini" @click="handleCancelOrderClick">取消订单</el-button>
+        </div>
       </el-card>
       <el-button class="summit" type="primary" @click="handleSummitClick">提交</el-button>
     </el-col>
@@ -41,15 +49,19 @@
 
   export default {
     name: 'Ordering',
+    props: {
+      editOrderId: String,
+    },
     data() {
       return {
         productList: null,
         cart: [],
+        orderEditing: null,
       };
     },
     methods: {
       ...mapActions('products', ['refreshProducts']),
-      ...mapActions('orders', ['createOrder']),
+      ...mapActions('orders', ['createOrder', 'getOrderDetail', 'updateOrder', 'cancelOrder']),
       clearCart() {
         this.cart.forEach((t) => {
           t.quantity = 0;
@@ -65,7 +77,7 @@
           if (!product.isOnShelf) return;
           let oldItem = null;
           if (oldCart) {
-            oldItem = oldCart.find(t => t.id === product.id);
+            oldItem = oldCart.find(t => t._id === product._id);
           }
           cart.push(Object.assign({}, product, {
             quantity: oldItem ? oldItem.quantity : 0,
@@ -74,25 +86,57 @@
         this.cart = cart;
       },
       getSummaries() {
-        let quantity = 0;
-        let sum = 0;
-        this.cartFiltered.forEach((item) => {
-          quantity += item.quantity;
-          sum += item.price * item.quantity;
-        });
-        return ['总计', quantity, sum.toFixed(2)];
+        return ['总计', this.summery.quantity, this.summery.sum.toFixed(2)];
       },
       handleSummitClick() {
-        this.createOrder(this.cartFiltered).then(() => {
+        if (!this.orderEditing) {
+          this.createOrder(this.cartFiltered).then(() => {
+            this.$notify({
+              type: 'success',
+              title: '提交成功',
+            });
+            this.clearCart();
+          });
+        } else {
+          this.updateOrder({
+            id: this.orderEditing._id,
+            goods: this.cartFiltered,
+          }).then(() => {
+            this.$notify({
+              type: 'success',
+              title: '更新成功',
+            });
+            this.clearCart();
+            this.orderEditing = null;
+          });
+        }
+      },
+      handleCancelEditClick() {
+        this.orderEditing = null;
+      },
+      handleCancelOrderClick() {
+        this.updateOrderStatus({
+          id: this.orderEditing._id,
+          status: 'canceled',
+        }).then(() => {
           this.$notify({
             type: 'success',
-            title: '提交成功',
+            title: '已取消',
           });
-          this.clearCart();
+          this.orderEditing = null;
         });
       },
-      handleClearClick() {
+      editOrder(id) {
         this.clearCart();
+        this.getOrderDetail(id).then((order) => {
+          this.orderEditing = order;
+          order.list.forEach((item) => {
+            const product = this.cart.find(t => t._id === item._id);
+            if (product) {
+              product.quantity = item.quantity;
+            }
+          });
+        });
       },
     },
     computed: {
@@ -101,12 +145,31 @@
       cartFiltered() {
         return this.cart.filter(t => t.quantity > 0);
       },
+      summery() {
+        const summery = {
+          quantity: 0,
+          sum: 0,
+        };
+        this.cartFiltered.forEach((item) => {
+          summery.quantity += item.quantity;
+          summery.sum += item.price * item.quantity;
+        });
+        return summery;
+      },
     },
     watch: {
       products: {
         immediate: true,
         handler(val) {
           this.syncCart(val, this.cart);
+        },
+      },
+      editOrderId: {
+        immediate: true,
+        handler(val) {
+          if (val) {
+            this.editOrder(val);
+          }
         },
       },
     },
@@ -132,5 +195,16 @@
   .summit {
     width: 100%;
     margin-top: 16px;
+  }
+  .editing-order {
+    margin-top: 10px;
+    font-size: 14px;
+    .title {
+      font-weight: bold;
+      font-size: 17px;
+    }
+    .row:not(:last-of-type) {
+      margin-bottom: 10px;
+    }
   }
 </style>

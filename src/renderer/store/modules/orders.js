@@ -22,10 +22,10 @@ const mutations = {
 };
 
 const actions = {
-  getOrderDetail(id) {
+  getOrderDetail(store, id) {
     return new Promise((resolve, reject) => {
       helper.getOrderDetail(id).then((data) => {
-        resolve(data);
+        resolve(data[0]);
       }).catch((err) => {
         reject(err);
       });
@@ -33,7 +33,6 @@ const actions = {
   },
   createOrder(store, goods) {
     return new Promise((resolve, reject) => {
-      console.log(goods);
       helper.createOrder(goods).then((result) => {
         resolve(result);
       }).catch((err) => {
@@ -53,6 +52,15 @@ const actions = {
       prom.then((result) => {
         commit(types[type], result);
         resolve(result);
+      }).catch((err) => {
+        reject(err);
+      });
+    });
+  },
+  updateOrder(store, { id, goods }) {
+    return new Promise((resolve, reject) => {
+      helper.updateOrder(id, goods).then((docs) => {
+        resolve(docs);
       }).catch((err) => {
         reject(err);
       });

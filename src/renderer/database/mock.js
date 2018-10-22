@@ -12,8 +12,6 @@ let orderDb;
 let products = [];
 let orders = []; // eslint-disable-line
 
-console.log(APPDATA);
-
 async function initDb() {
   if (!productDb) {
     productDb = new Nedb({
@@ -23,7 +21,7 @@ async function initDb() {
     await new Promise((resolve) => {
       productDb.remove({}, { multi: true }, (err, num) => {
         if (!err) {
-          console.log(`database product clear, ${num} docs removed`);
+          console.log(`database product clear, ${num} docs removed`); // eslint-disable-line
           resolve(num);
         }
       });
@@ -38,7 +36,7 @@ async function initDb() {
     await new Promise((resolve) => {
       orderDb.remove({}, { multi: true }, (err, num) => {
         if (!err) {
-          console.log(`database order clear, ${num} docs removed`);
+          console.log(`database order clear, ${num} docs removed`); // eslint-disable-line
           resolve(num);
         }
       });

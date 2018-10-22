@@ -1,8 +1,8 @@
 <template>
   <div>
     <el-tabs v-model="activeTab" type="card" :before-leave="handleTabSwitch">
-      <el-tab-pane label="经营" name="operate">
-        <ordering></ordering>
+      <el-tab-pane label="经营" name="ordering">
+        <ordering :edit-order-id="editOrderId"></ordering>
       </el-tab-pane>
       <el-tab-pane label="未完成订单" name="pending">
         <pending-orders></pending-orders>
@@ -25,7 +25,8 @@
     components: { Ordering, PendingOrders, CompletedOrders },
     data() {
       return {
-        activeTab: 'operate',
+        activeTab: 'ordering',
+        editOrderId: null,
       };
     },
     methods: {
@@ -36,10 +37,28 @@
           this.getPendingOrders();
         } else if (activeName === 'completed') {
           this.getCompletedOrders();
-        } else if (activeName === 'operate') {
+        } else if (activeName === 'ordering') {
           this.refreshProducts();
         }
       },
+    },
+    watch: {
+      $route: {
+        handler({ name, query }) {
+          if (name === 'DailyOperation') {
+            if (query.tab !== this.activeTab) {
+              this.activeTab = query.tab;
+            }
+          }
+        },
+      },
+    },
+    mounted() {
+      this.$bus.$on('edit-order', (id) => {
+        console.log('here', id);
+        this.activeTab = 'ordering';
+        this.editOrderId = id;
+      });
     },
   };
 </script>
