@@ -11,13 +11,12 @@
                 <span>销售商品数：{{summery.productCount}}</span>
                 <span>总利润：{{summery.profit}}</span>
             </div>
-            <el-button @click="showDiagram" size="mini">图表</el-button>
             <el-button @click="refresh" size="mini">刷新</el-button>
         </div>
         <div class="chart">
             <ve-histogram :data="chartData" :settings="chartSettings" :extend="chartExtend" height="500px"></ve-histogram>
         </div>
-        <el-table :data="incomeStatisticData">
+        <el-table :data="incomeStatisticData" row-key="day" @expand-change="handleRowExpand" :expand-row-keys="expandedRowKeys">
             <el-table-column type="expand">
                 <template slot-scope="scope">
                     <el-table v-if="scope.row.detail" :data="scope.row.detail" :border="true" size="mini">
@@ -44,6 +43,11 @@
                                 <span>{{formatTime(row.updated_at)}}</span>
                             </template>
                         </el-table-column>
+                        <el-table-column label="操作">
+                            <template slot-scope="{row}">
+                                <el-button @click="handleRemoveOrderClick(row._id)" type="text">删除</el-button>
+                            </template>
+                        </el-table-column>
                     </el-table>
                 </template>
             </el-table-column>
@@ -59,6 +63,13 @@
             <el-table-column label="利润" prop="profit"></el-table-column>
             <el-table-column label="卖出商品" prop="quantity"></el-table-column>
         </el-table>
+        <el-dialog title="提示" :visible.sync="dialogConfirmVisible">
+            <div>确认删除这条订单？</div>
+            <div slot="footer">
+                <el-button @click="dialogConfirmVisible = false" size="mini">取消</el-button>
+                <el-button type="primary" @click="doRemoveOrder" size="mini">确定</el-button>
+            </div>
+        </el-dialog>
     </div>
 </template>
 
@@ -74,6 +85,8 @@
     components: { VeHistogram },
     data() {
       return {
+        dialogConfirmVisible: false,
+        orderId: null,
         activeTab: 0,
         month: moment(`${(new Date()).getFullYear()}-${(new Date().getMonth() + 1)}-01 00:00:00`).toDate(),
         statusList: {
@@ -89,6 +102,7 @@
             label: { show: true, position: 'top' },
           },
         },
+        expandedRowKeys: [],
       };
     },
     computed: {
@@ -150,7 +164,7 @@
       },
     },
     methods: {
-      ...mapActions('orders', ['getOrdersOfMonth']),
+      ...mapActions('orders', ['getOrdersOfMonth', 'removeOrder']),
       refresh() {
         this.getOrdersOfMonth(this.monthText);
       },
@@ -164,8 +178,22 @@
         const text = `0${day}`.slice(-2);
         return `${this.monthText}-${text}`;
       },
-      showDiagram() {
-
+      handleRemoveOrderClick(id) {
+        this.orderId = id;
+        this.dialogConfirmVisible = true;
+      },
+      doRemoveOrder() {
+        this.dialogConfirmVisible = false;
+        this.removeOrder(this.orderId).then(() => {
+          this.$notify({
+            type: 'success',
+            title: '删除成功',
+          });
+          this.refresh();
+        });
+      },
+      handleRowExpand(row, expandedRows) {
+        this.expandedRowKeys = expandedRows.map(t => t.day);
       },
     },
     mounted() {
