@@ -7,7 +7,7 @@
 <style>
   .container {
     display: flex;
-    width: 300px;
+    width: 360px;
     flex-direction: column;
     font-size: 16px;
   }
@@ -41,6 +41,29 @@
     font-size: 18px;
   }
 </style>
+
+<script>
+  const $ = require('jquery');
+  const moment = require('moment');
+  const { ipcRenderer } = require('electron');
+
+  function fillOrder(order) {
+    $('#orderTime > span').text(moment(order.updated_at).format('YYYY-MM-DD HH:mm:ss'));
+    let list = '';
+    order.list.forEach((item) => {
+      list += `<tr class="product"><td>${item.name}</td><td>${item.price}</td><td>x${item.quantity}</td></tr>`;
+    });
+    $('.product').remove();
+    $('#tableHeader').after(list);
+    $('#sum > span').text(order.total);
+    $('#printTime > span').text(moment().format('YYYY-MM-DD HH:mm:ss'));
+    ipcRenderer.sendToHost('fill-completed', 'completed');
+  }
+
+  ipcRenderer.on('fill-order', (event, order) => {
+    fillOrder(order);
+  });
+</script>
 <body>
 <div class="container">
   <div id="title">小票</div>
@@ -60,23 +83,4 @@
   <div id="printTime">打印时间：<span></span></div>
 </div>
 </body>
-
-<script>
-  const $ = require('jquery');
-  const moment = require('moment');
-  const { ipcRenderer } = require('electron');
-  ipcRenderer.on('fill-order', (event, order) => {
-    $('#orderTime > span').text(moment(order.updated_at).format('YYYY-MM-DD HH:mm:ss'));
-    let list = '';
-    order.list.forEach((item) => {
-      list += `<tr><td>${item.name}</td><td>${item.price}</td><td>x${item.quantity}</td></tr>`;
-    });
-    $('#tableHeader').after(list);
-    $('#sum > span').text(order.total);
-    $('#printTime > span').text(moment().format('YYYY-MM-DD HH:mm:ss'));
-    setTimeout(() => {
-      event.sender.send('fill-completed');
-    });
-  });
-</script>
 </html>

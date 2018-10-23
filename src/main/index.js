@@ -14,19 +14,6 @@ const winURL = process.env.NODE_ENV === 'development'
   ? 'http://localhost:9080'
   : `file://${__dirname}/index.html`;
 
-function createPrintWindow() {
-  printWindow = new BrowserWindow({
-    width: 320,
-    height: 400,
-    useContentSize: true,
-    // show: false,
-  });
-  printWindow.loadURL(`file://${__static}/print-template.html`);
-  printWindow.on('closed', () => {
-    printWindow = null;
-  });
-}
-
 function createWindow() {
   /**
    * Initial window options
@@ -42,7 +29,6 @@ function createWindow() {
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
-  createPrintWindow();
 }
 
 app.on('ready', createWindow);
@@ -64,17 +50,6 @@ ipcMain.on('get-printers', (event) => {
   event.sender.send('printer-list', printers);
 });
 
-ipcMain.on('fill-completed', () => {
-  printWindow.webContents.print({
-    silent: true,
-    deviceName: 'pdfFactory Pro',
-    pageSize: { width: 100, height: 100 },
-  });
-});
-
-ipcMain.on('print-order', (event, goods) => {
-  printWindow.webContents.send('fill-order', goods);
-});
 
 /**
  * Auto Updater

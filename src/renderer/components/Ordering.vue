@@ -41,12 +41,23 @@
       </el-card>
       <el-button class="summit" type="primary" @click="handleSummitClick">提交</el-button>
     </el-col>
+    <el-dialog :visible.sync="dialogConfirmVisible" title="提示" width="300px">
+      <div>下单成功，是否打印小票？</div>
+      <div slot="footer">
+        <el-button @click="dialogConfirmVisible = false" size="mini">取消</el-button>
+        <el-button type="primary" @click="printOrder" size="mini">确定</el-button>
+      </div>
+    </el-dialog>
+    <div class="ticker-preview" :class="{shown: dialogConfirmVisible}">
+      <webview ref="webview" :src="ticketTemplatePath" nodeintegration style="flex:1;width:100%;"
+               :style="{height: `${webviewHeight}px`}"></webview>
+    </div>
   </el-row>
 </template>
 
 <script>
   import { mapState, mapActions } from 'vuex';
-  import { ipcRenderer } from 'electron';
+  import moment from 'moment';
 
   export default {
     name: 'Ordering',
@@ -58,6 +69,9 @@
         productList: null,
         cart: [],
         orderEditing: null,
+        lastOrder: null,
+        dialogConfirmVisible: false,
+        ticketTemplatePath: `file://${__static}/print-template.html`,
       };
     },
     methods: {
@@ -92,25 +106,23 @@
       handleSummitClick() {
         if (!this.cartFiltered || this.cartFiltered.length === 0) return;
 
+        let promise;
         if (!this.orderEditing) {
-          this.createOrder(this.cartFiltered).then((order) => {
-            this.clearCart();
-            this.$confirm('下单完成，是否打印小票').then(() => {
-              this.printOrder(order);
-            }).catch(() => {});
-          });
+          promise = this.createOrder(this.cartFiltered);
         } else {
-          this.updateOrder({
+          promise = this.updateOrder({
             id: this.orderEditing._id,
             goods: this.cartFiltered,
-          }).then(() => {
-            this.clearCart();
-            this.orderEditing = null;
-            this.$confirm('修改，是否重新打印小票').then((order) => {
-              this.printOrder(order);
-            }).catch(() => {});
           });
         }
+        promise.then((order) => {
+          this.clearCart();
+          this.orderEditing = null;
+          this.lastOrder = order;
+          this.dialogConfirmVisible = true;
+          const { webview } = this.$refs;
+          webview.send('fill-order', order);
+        });
       },
       handleCancelEditClick() {
         this.orderEditing = null;
@@ -139,8 +151,12 @@
           });
         });
       },
-      printOrder(order) {
-        ipcRenderer.send('print-order', order);
+      printOrder() {
+        const { webview } = this.$refs;
+        webview.print({ silent: true });
+      },
+      formatTime(date = null, format = 'YYYY-MM-DD HH:mm:ss') {
+        return moment(date).format(format);
       },
     },
     computed: {
@@ -159,6 +175,10 @@
           summery.sum += item.price * item.quantity;
         });
         return summery;
+      },
+      webviewHeight() {
+        if (!this.lastOrder) return 170;
+        return 170 + this.lastOrder.list.length * 24;
       },
     },
     watch: {
@@ -209,6 +229,22 @@
     }
     .row:not(:last-of-type) {
       margin-bottom: 10px;
+    }
+  }
+  .ticker-preview {
+    position: fixed;
+    left: -200%;
+    top: -200%;
+    z-index: 9999;
+    display: flex;
+    width: 400px;
+    flex-direction: column;
+    background-color: #fff;
+    border-radius: 10px;
+    transform: translateX(-50%);
+    &.shown {
+      left: 50%;
+      top: 400px;
     }
   }
 </style>
