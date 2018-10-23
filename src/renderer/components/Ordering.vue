@@ -46,6 +46,7 @@
 
 <script>
   import { mapState, mapActions } from 'vuex';
+  import { ipcRenderer } from 'electron';
 
   export default {
     name: 'Ordering',
@@ -89,25 +90,25 @@
         return ['总计', this.summery.quantity, this.summery.sum.toFixed(2)];
       },
       handleSummitClick() {
+        if (!this.cartFiltered || this.cartFiltered.length === 0) return;
+
         if (!this.orderEditing) {
-          this.createOrder(this.cartFiltered).then(() => {
-            this.$notify({
-              type: 'success',
-              title: '提交成功',
-            });
+          this.createOrder(this.cartFiltered).then((order) => {
             this.clearCart();
+            this.$confirm('下单完成，是否打印小票').then(() => {
+              this.printOrder(order);
+            }).catch(() => {});
           });
         } else {
           this.updateOrder({
             id: this.orderEditing._id,
             goods: this.cartFiltered,
           }).then(() => {
-            this.$notify({
-              type: 'success',
-              title: '更新成功',
-            });
             this.clearCart();
             this.orderEditing = null;
+            this.$confirm('修改，是否重新打印小票').then((order) => {
+              this.printOrder(order);
+            }).catch(() => {});
           });
         }
       },
@@ -137,6 +138,9 @@
             }
           });
         });
+      },
+      printOrder(order) {
+        ipcRenderer.send('print-order', order);
       },
     },
     computed: {

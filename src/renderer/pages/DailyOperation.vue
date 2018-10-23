@@ -42,17 +42,6 @@
         }
       },
     },
-    watch: {
-      $route: {
-        handler({ name, query }) {
-          if (name === 'DailyOperation') {
-            if (query.tab !== this.activeTab) {
-              this.activeTab = query.tab;
-            }
-          }
-        },
-      },
-    },
     mounted() {
       this.$bus.$on('edit-order', (id) => {
         this.activeTab = 'ordering';
