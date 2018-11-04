@@ -1,5 +1,5 @@
 {
-  "name": "store-manager",
+  "name": "cash-register",
   "version": "0.0.1",
   "author": "HarlanLuo <luoxwen@gmail.com>",
   "description": "An accounting software for small store",
@@ -22,7 +22,7 @@
     "postinstall": "npm run lint:fix"
   },
   "build": {
-    "productName": "store-manager",
+    "productName": "cash-register",
     "appId": "com.harlanluo.store",
     "directories": {
       "output": "build"
@@ -58,7 +58,6 @@
   "dependencies": {
     "axios": "^0.18.0",
     "echarts": "^4.2.0-rc.2",
-    "electron": "^2.0.4",
     "element-ui": "^2.4.8",
     "faker": "^4.1.0",
     "jquery": "^3.3.1",
@@ -91,6 +90,7 @@
     "css-loader": "^0.28.11",
     "del": "^3.0.0",
     "devtron": "^1.4.0",
+    "electron": "^2.0.4",
     "electron-builder": "^20.19.2",
     "electron-debug": "^1.5.0",
     "electron-devtools-installer": "^2.2.4",

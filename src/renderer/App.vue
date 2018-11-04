@@ -6,7 +6,7 @@
 
 <script>
   export default {
-    name: 'store-manager',
+    name: 'cash-register',
   };
 </script>
 

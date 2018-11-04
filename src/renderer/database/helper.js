@@ -8,7 +8,7 @@ let orderDb;
 
 let homedir = remote.app.getPath('userData');
 if (process.env.NODE_ENV !== 'production') {
-  homedir = path.resolve(homedir, '../store-manager');
+  homedir = path.resolve(homedir, '../cash-register');
 }
 
 function initDb() {

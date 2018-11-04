@@ -1,4 +1,4 @@
-# store-manager
+# cash-register
 
 > 使用Electron + Vue + Element UI + NeDB搭建的小商店记账软件
 

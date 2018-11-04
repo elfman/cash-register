@@ -15,7 +15,7 @@ let orders = []; // eslint-disable-line
 async function initDb() {
   if (!productDb) {
     productDb = new Nedb({
-      filename: path.resolve(APPDATA, './store-manager/product.db'),
+      filename: path.resolve(APPDATA, './cash-register/product.db'),
       autoload: true,
     });
     await new Promise((resolve) => {
@@ -30,7 +30,7 @@ async function initDb() {
 
   if (!orderDb) {
     orderDb = new Nedb({
-      filename: path.resolve(APPDATA, './store-manager/order.db'),
+      filename: path.resolve(APPDATA, './cash-register/order.db'),
       autoload: true,
     });
     await new Promise((resolve) => {
