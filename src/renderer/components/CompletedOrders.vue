@@ -57,7 +57,6 @@
     },
     computed: {
       ...mapState('orders', ['completedOrders']),
-      ...mapState(['fromTime']),
     },
     methods: {
       ...mapActions('orders', ['getOrderDetail', 'getCompletedOrders', 'removeOrder']),
@@ -89,7 +88,7 @@
         });
       },
       refresh() {
-        this.getCompletedOrders(this.fromTime).catch((err) => {
+        this.getCompletedOrders().catch((err) => {
           this.$notify({
             type: 'error',
             title: '获取已完成订单时失败',

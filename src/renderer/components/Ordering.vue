@@ -161,7 +161,6 @@
     },
     computed: {
       ...mapState('products', ['products']),
-      ...mapState(['fromTime']),
       cartFiltered() {
         return this.cart.filter(t => t.quantity > 0);
       },

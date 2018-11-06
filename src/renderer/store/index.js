@@ -1,33 +1,29 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
+import crypto from 'crypto';
+import helper from '../database/helper';
 
 import modules from './modules';
 import types from './mutation-types';
 
 Vue.use(Vuex);
 
-let runTime;
-if (localStorage.getItem('runTime')) {
-  runTime = new Date(localStorage.getItem('runTime'));
-} else {
-  runTime = new Date();
-  localStorage.setItem('runTime', runTime);
-}
 
 const state = {
-  runTime,
+  password: null,
 };
 
 const mutations = {
-  [types.UPDATE_RUN_TIME](state, payload) {
-    state.runTime = payload;
+  [types.UPDATE_PASSWORD](state, payload) {
+    state.password = payload;
   },
 };
 
 const actions = {
-  updateRunTime({ commit }, payload = new Date()) {
-    localStorage.setItem('runTime', payload);
-    commit(types.UPDATE_RUN_TIME, payload);
+  login({ commit }, payload) {
+    const pwd = crypto.createHash('sha1').update(payload).digest('hex');
+    helper.initDb(pwd.substr(0, 16));
+    commit(types.UPDATE_PASSWORD, pwd);
   },
 };
 

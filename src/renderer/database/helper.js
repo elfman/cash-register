@@ -1,6 +1,7 @@
 import moment from 'moment';
 import path from 'path';
 import { remote } from 'electron'; // eslint-disable-line
+import crypto from 'crypto';
 const Nedb = require('nedb');
 
 let productDb;
@@ -11,11 +12,44 @@ if (process.env.NODE_ENV !== 'production') {
   homedir = path.resolve(homedir, '../cash-register');
 }
 
-function initDb() {
+function getEncrypt(key) {
+  return (data) => {
+    const clearEncoding = 'utf8';
+    const cipherEncoding = 'base64';
+    const cipher = crypto.createCipher('aes-256-ecb', key);
+    cipher.setAutoPadding(true);
+    let result = cipher.update(data, clearEncoding, cipherEncoding);
+    result += cipher.final(cipherEncoding);
+    return result;
+  };
+}
+
+function getDecrypt(key) {
+  return (data) => {
+    if (!data) {
+      return '';
+    }
+    const clearEncoding = 'utf8';
+    const cipherEncoding = 'base64';
+    const decipher = crypto.createDecipher('aes-256-ecb', key);
+    decipher.setAutoPadding(true);
+    let result = decipher.update(data, cipherEncoding, clearEncoding);
+    result += decipher.final(clearEncoding);
+    return result;
+  };
+}
+
+function isReady() {
+  return productDb && orderDb;
+}
+
+function initDb(key) {
   if (!productDb) {
     productDb = new Nedb({
       filename: path.resolve(homedir, './product.db'),
       autoload: true,
+      afterSerialization: getEncrypt(key),
+      beforeDeserialization: getDecrypt(key),
     });
   }
 
@@ -23,6 +57,8 @@ function initDb() {
     orderDb = new Nedb({
       filename: path.resolve(homedir, './order.db'),
       autoload: true,
+      afterSerialization: getEncrypt(key),
+      beforeDeserialization: getDecrypt(key),
     });
   }
 }
@@ -312,6 +348,7 @@ function getOrdersOfRange(start, end) {
 }
 
 export default {
+  isReady,
   initDb,
   addProduct,
   getAllProducts,

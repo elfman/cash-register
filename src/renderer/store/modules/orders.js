@@ -1,3 +1,4 @@
+import moment from 'moment';
 
 import helper from '../../database/helper';
 import types from '../mutation-types';
@@ -89,7 +90,11 @@ const actions = {
       });
     });
   },
-  getCompletedOrders({ commit }, startTime = new Date(localStorage.getItem('runTime'))) {
+  getCompletedOrders({ commit }, startTime) {
+    if (!startTime) {
+      startTime = moment().hour(0).minute(0).second(0)
+        .toDate();
+    }
     return new Promise((resolve, reject) => {
       helper.getCompletedOrders(startTime).then((result) => {
         commit(types.UPDATE_COMPLETED_ORDERS, result);
